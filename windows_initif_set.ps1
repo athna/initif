@@ -6,7 +6,7 @@ $ipaddr =$Args[1]
 $broadcast=$Args[2]
 $gateway=$Args[3]
 $prefix=$Args[4]
-$IFNAME="Local Area Connection 3"
+$Idx=15
 
 if ($prefix -eq 8){
     $mask ="255.0.0.0"
@@ -17,6 +17,6 @@ if ($prefix -eq 8){
 }
 
 
-netsh interface ipv4 set address name=$IFNAME source=static address=$ipaddr mask=$mask gateway=$gateway gwmetric=1
+netsh interface ipv4 set address name=$Idx source=static address=$ipaddr mask=$mask gateway=$gateway gwmetric=1
 
 ipconfig

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-INPUT_FILE="initif_input.txt"
 DEV=$1
-IPaddr=$2
+IP_addr=$2
+dev_num=$3
+MAC_addr_begin=`echo "1 + 18 * ( ${dev_num} - 1 )" | bc`
+MAC_addr_end=`echo "${MAC_addr_begin} + 16" | bc`
 
 #Ubuntu
-MACaddr=`ifconfig  | grep  HWaddr | sed -E "s@.*HWaddr\s(\S+)(\s.*|$)@\1@g"`
+MAC_addr_all=`ifconfig  | grep  HWaddr | sed -E "s@.*HWaddr\s(\S+)(\s.*|$)@\1@g"`
+MAC_addr=`echo ${MAC_addr_all} | cut -c ${MAC_addr_begin}-${MAC_addr_end}`
 
-touch ${INPUT_FILE}
-echo ${DEV}>${INPUT_FILE}
-echo ${IPaddr}>>${INPUT_FILE}
-echo ${MACaddr}>>${INPUT_FILE}
+echo "${DEV} ${IP_addr} ${MAC_addr}"
