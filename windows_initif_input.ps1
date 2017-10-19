@@ -1,5 +1,3 @@
-$INPUT_TXT_PATH="initif_input.txt"
-
 $DEV =$Args[0]
 $IPaddr =$Args[1]
 $eth_num=$Args[2]
