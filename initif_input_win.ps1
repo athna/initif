@@ -1,12 +1,45 @@
 $DEV =$Args[0]
 $IPaddr =$Args[1]
-$eth_num=$Args[2]
+$MACaddr_conf=$Args[2]
+$eth_num=-999
 
 
-$GETMAC=getmac /fo csv
-$MACaddr=$GETMAC[$eth_num][1]+$GETMAC[$eth_num][2]+":"+$GETMAC[$eth_num][4]+$GETMAC[$eth_num][5]+":"+$GETMAC[$eth_num][7]+$GETMAC[$eth_num][8]+":"+$GETMAC[$eth_num][10]+$GETMAC[$eth_num][11]+":"+$GETMAC[$eth_num][13]+$GETMAC[$eth_num][14]+":"+$GETMAC[$eth_num][16]+$GETMAC[$eth_num][17]
+#get mac address
+getmac /fo csv /v > getmac.csv
+$GETMAC=Import-Csv getmac.csv
+$GETMAC_addr=$GETMAC."Physical Address"
+$GETMAC_line=(Get-Content .\getmac.csv).Length #=2:one interface ,>=3:some interface
 
+if ($GETMAC_line -eq 2){
+    $MACaddr=$GETMAC_addr[0]+$GETMAC_addr[1]+":"+$GETMAC_addr[3]+$GETMAC_addr[4]+":"+$GETMAC_addr[6]+$GETMAC_addr[7]+":"+$GETMAC_addr[9]+$GETMAC_addr[10]+":"+$GETMAC_addr[12]+$GETMAC_addr[13]+":"+$GETMAC_addr[15]+$GETMAC_addr[16]    
+}else{
+    for($i=0;$GETMAC_addr[$i] -ne 0;$i++){
+        if(($GETMAC_addr[$i][12] -eq $MACaddr_conf[0])-and($GETMAC_addr[$i][13] -eq $MACaddr_conf[1])-and($GETMAC_addr[$i][15] -eq $MACaddr_conf[3])-and($GETMAC_addr[$i][16] -eq $MACaddr_conf[4])){
+            $eth_num=$i
+            break
+        }
+    }
+    #TODO:when $eth_num==-999->error
+    $MACaddr=$GETMAC_addr[$eth_num][0]+$GETMAC_addr[$eth_num][1]+":"+$GETMAC_addr[$eth_num][3]+$GETMAC_addr[$eth_num][4]+":"+$GETMAC_addr[$eth_num][6]+$GETMAC_addr[$eth_num][7]+":"+$GETMAC_addr[$eth_num][9]+$GETMAC_addr[$eth_num][10]+":"+$GETMAC_addr[$eth_num][12]+$GETMAC_addr[$eth_num][13]+":"+$GETMAC_addr[$eth_num][15]+$GETMAC_addr[$eth_num][16]
+}
 
-$result=$DEV+" "+$IPaddr+" "+$MACaddr
+#get Connection Name
+if ($GETMAC_line -eq 2){
+    $Con_Name=$GETMAC."Connection Name"
+}else{
+    $Con_Name=$GETMAC."Connection Name"[$eth_num]
+}
 
+#get index
+$netsh=netsh interface ipv4 show interface
+for($i=1;$netsh[$i] -ne 0;$i++){
+    if( $netsh[$i].Contains($Con_Name)){
+        $Idx= $netsh[$i][0]+$netsh[$i][1]+$netsh[$i][2]
+        $Idx= [int]$Idx
+        break;
+    }
+}
+
+$result=[string]$Idx+" "+$IPaddr+" "+$MACaddr
+Remove-Item getmac.csv
 echo $result
