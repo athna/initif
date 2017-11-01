@@ -10,7 +10,7 @@ $GETMAC=Import-Csv getmac.csv
 $GETMAC_addr=$GETMAC."Physical Address"
 $GETMAC_line=(Get-Content .\getmac.csv).Length #=2:one interface ,>=3:some interface
 
-if ($GETMAC_line -eq 2){
+if (($GETMAC_line -eq 2) -or ($MACaddr_conf -eq "ZZ:ZZ")){
     $MACaddr=$GETMAC_addr[0]+$GETMAC_addr[1]+":"+$GETMAC_addr[3]+$GETMAC_addr[4]+":"+$GETMAC_addr[6]+$GETMAC_addr[7]+":"+$GETMAC_addr[9]+$GETMAC_addr[10]+":"+$GETMAC_addr[12]+$GETMAC_addr[13]+":"+$GETMAC_addr[15]+$GETMAC_addr[16]    
 }else{
     for($i=0;$GETMAC_addr[$i] -ne 0;$i++){
@@ -24,7 +24,7 @@ if ($GETMAC_line -eq 2){
 }
 
 #get Connection Name
-if ($GETMAC_line -eq 2){
+if (($GETMAC_line -eq 2) -or ($MACaddr_conf -eq "ZZ:ZZ")){
     $Con_Name=$GETMAC."Connection Name"
 }else{
     $Con_Name=$GETMAC."Connection Name"[$eth_num]
