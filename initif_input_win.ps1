@@ -11,7 +11,7 @@ $GETMAC_addr=$GETMAC."Physical Address"
 $GETMAC_line=(Get-Content .\getmac.csv).Length #=2:one interface ,>=3:some interface
 
 if (($GETMAC_line -eq 2) -or ($MACaddr_conf -eq "ZZ:ZZ")){
-    if ($GETMAC_addr.Length -eq 1){
+    if ($GETMAC_addr.Length -eq 17){
         $MACaddr=$GETMAC_addr[0]+$GETMAC_addr[1]+":"+$GETMAC_addr[3]+$GETMAC_addr[4]+":"+$GETMAC_addr[6]+$GETMAC_addr[7]+":"+$GETMAC_addr[9]+$GETMAC_addr[10]+":"+$GETMAC_addr[12]+$GETMAC_addr[13]+":"+$GETMAC_addr[15]+$GETMAC_addr[16]
     }else{
         for($i=0;$i -ne $GETMAC_addr.Length;$i++){
@@ -41,8 +41,16 @@ if (($GETMAC_line -eq 2) -or ($MACaddr_conf -eq "ZZ:ZZ")){
 #get index
 $netsh=netsh interface ipv4 show interface
 for($i=1;($netsh[$i] -ne 0) -and ($netsh[$i] -ne $null);$i++){
-    for($j=0;$j -ne $Con_Name.Length;$j++){
-        if($netsh[$i].Contains($Con_Name[$j])){
+    if($Con_Name.Length -lt 5){
+        for($j=0;$j -ne $Con_Name.Length;$j++){
+            if($netsh[$i].Contains($Con_Name[$j])){
+                $Idx= $netsh[$i][0]+$netsh[$i][1]+$netsh[$i][2]
+                $Idx= [int]$Idx
+                break
+            }
+        }
+    }else{
+        if($netsh[$i].Contains($Con_Name)){
             $Idx= $netsh[$i][0]+$netsh[$i][1]+$netsh[$i][2]
             $Idx= [int]$Idx
             break

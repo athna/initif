@@ -16,10 +16,10 @@ foreach ($line in $CONF) {
 
         $input_data=powershell $INPUT_PATH $line
         echo "Input Data: "$input_data >>$LOG_PATH
-
+        
         $set_data=powershell  $SHAPE_PATH $input_data
         echo "set Data: "$set_data >>$LOG_PATH
-
+        
         powershell $SET_PATH $set_data
         $eth_num=$eth_num+1
     }
