@@ -19,3 +19,5 @@ if ($prefix -eq 8){
 
 netsh interface ipv4 set address name=$Idx source=static address=$ipaddr mask=$mask gateway=$gateway gwmetric=1
 netsh interface ip set dns name=$Idx static $gateway primary
+
+#echo $ipaddr >> $ABS_PATH+"check_ip_addr.conf"
