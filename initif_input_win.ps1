@@ -14,7 +14,7 @@ if (($GETMAC_line -eq 2) -or ($MACaddr_conf -eq "ZZ:ZZ")){
     if ($GETMAC_addr.Length -eq 1){
         $MACaddr=$GETMAC_addr[0]+$GETMAC_addr[1]+":"+$GETMAC_addr[3]+$GETMAC_addr[4]+":"+$GETMAC_addr[6]+$GETMAC_addr[7]+":"+$GETMAC_addr[9]+$GETMAC_addr[10]+":"+$GETMAC_addr[12]+$GETMAC_addr[13]+":"+$GETMAC_addr[15]+$GETMAC_addr[16]
     }else{
-        for($i=0;$i -eq $GETMAC_addr.Length;$i++){
+        for($i=0;$i -ne $GETMAC_addr.Length;$i++){
             if($GETMAC_addr[$i].Length -eq 17){
                 $MACaddr=$GETMAC_addr[$i][0]+$GETMAC_addr[$i][1]+":"+$GETMAC_addr[$i][3]+$GETMAC_addr[$i][4]+":"+$GETMAC_addr[$i][6]+$GETMAC_addr[$i][7]+":"+$GETMAC_addr[$i][9]+$GETMAC_addr[$i][10]+":"+$GETMAC_addr[$i][12]+$GETMAC_addr[$i][13]+":"+$GETMAC_addr[$i][15]+$GETMAC_addr[$i][16]
             }

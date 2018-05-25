@@ -1,5 +1,6 @@
 #input eth0 192.168.122.76 192.168.122.255 192.168.122.1 24
 $ABS_PATH="C:\CyberRange\initif\"
+$IPCONF_PATH=$ABS_PATH+"check_ip_addr.conf"
 $LOG_PATH=$ABS_PATH+"log.txt"
 
 $Idx =$Args[0]
@@ -20,4 +21,4 @@ if ($prefix -eq 8){
 netsh interface ipv4 set address name=$Idx source=static address=$ipaddr mask=$mask gateway=$gateway gwmetric=1
 netsh interface ip set dns name=$Idx static $gateway primary
 
-#echo $ipaddr >> $ABS_PATH+"check_ip_addr.conf"
+echo $ipaddr >> $IPCONF_PATH

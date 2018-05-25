@@ -4,9 +4,10 @@ $SHAPE_PATH=$ABS_PATH+"initif_shape_win.exe"
 $SET_PATH=$ABS_PATH+"initif_set_win.ps1"
 $CONF_PATH=$ABS_PATH+"initif.conf"
 $LOG_PATH=$ABS_PATH+"log.txt"
+$IPCONF_PATH=$ABS_PATH+"check_ip_addr.conf"
 $eth_num=1
 
-#echo "" > $ABS_PATH+"check_ip_addr.conf"
+echo $null > $IPCONF_PATH
 
 $CONF = (Get-Content $CONF_PATH) -as [string[]]
 foreach ($line in $CONF) {
