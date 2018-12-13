@@ -1,25 +1,18 @@
-# initif
+# initif for windows
 
-## Windows版
+## compile command
+```
+gcc -o initif .\initif_win.c
+```
 
-#### 必要なもの
-- windows_initif.ps1
-- windows_initif_set.ps1
-- windows_initif_input.ps1
-- log.txt
-- initif.conf
-- initif_shape.exe
+## Installation of the program
+Use "task scheduler" for installation of the program.
+1. [Windows-R]
+2. Enter "task scheduler"
+3. Choice task scheduler library
+4. Click Create task
+5. Choice trigger tag
+6. Create trigger to launch at logon
+7. Choice operation tag
+8. Register a program
 
-#### セットアップ方法
-1. 上記のファイルを「C:\CyberRange\initif\」内に配置する
-2. [Windowsキー]+Rを押して、ファイル名を指定して実行を立ち上げる
-3. 「gpedit.msc」と入力してグループポリシーエディタを立ち上げる
-4. [コンピュータの構成]→[Windowsの設定]→[スタートアップをダブルクリック]
-5. 「powershellのタグ」を選択する
-6. 「C:\CyberRange\initif\windows_initif.ps1」を登録する
-
-なお、事前に実行ポリシーを変更しておく必要があります。
-
-
-## Ubuntu版
-現在作成中
