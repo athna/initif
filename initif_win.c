@@ -302,7 +302,6 @@ void calc_subnet_mask(int prefix, char set_subnet_mask[16]) {
         }
         j++;
     }
-    return 0;
 }
 
 /**
@@ -330,8 +329,6 @@ void calc_default_gw(char ip_adder[16], int prefix, char set_default_gateway[16]
     // forth octet
     temp_ptr = strtok(NULL, ".");
     strcat(set_default_gateway, "1");
-
-    return 0;
 }
 
 /**
@@ -390,8 +387,6 @@ int binary_to_decimal(char binary_number[8]) {
  * @param set_ip_adder      Assign the calculation result to this variable
  */
 void mac_to_ip_address(char MAC_adder[32], char set_ip_adder[16]) {
-    int i = 0;
-    long temp = 0;
     char *temp_ptr;
 
     temp_ptr = strtok(MAC_adder, ":");  // first octet
