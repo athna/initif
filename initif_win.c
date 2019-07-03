@@ -140,15 +140,18 @@ int main(void) {
         set_index_number = compare_MAC_adder(MAC_index_list, MAX_MAC_index_num, conf_MAC_adder);
         if (set_index_number != -1) {
             // calc value to assign to interface
-            //// ip address
-            strcpy(set_ip_adder, conf_ip_adder);
-            //// subnet mask
-            calc_subnet_mask(conf_prefix, set_subnet_mask);
-            //// default gateway
-            calc_default_gw(conf_ip_adder, conf_prefix, set_default_gateway);
+            if (strchr(conf_ip_adder, (int)'.')) {  // IPv4
+                //// ip address
+                strcpy(set_ip_adder, conf_ip_adder);
+                //// subnet mask
+                calc_subnet_mask(conf_prefix, set_subnet_mask);
+                //// default gateway
+                calc_default_gw(conf_ip_adder, conf_prefix, set_default_gateway);
 
-            // Assign some values to an interface
-            setup_interface(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
+                // Assign some values to an interface
+                setup_interface(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
+            } else {  //IPv6
+            }
         }
     }
     return 0;
