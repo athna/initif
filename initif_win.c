@@ -88,6 +88,11 @@ int main(void) {
             conf_prefix = strtol(temp_ptr, NULL, 10);
             /*MAC address*/
             temp_ptr = strtok(NULL, " ");
+            for (i = 0; i <= strlen(temp_ptr); i++) {
+                /* アルファベットの大文字なら変換 */
+                if (temp_ptr[i] >= 65 && temp_ptr[i] <= 90)
+                    temp_ptr[i] = temp_ptr[i] + 32;
+            }
             strcpy(conf_MAC_adder, temp_ptr);
             /*VLAN number*/
             temp_ptr = strtok(NULL, " ");
