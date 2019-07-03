@@ -198,6 +198,12 @@ int get_interface_info(struct MAC_index MAC_index_list[10]) {
                 i++;
                 j++;
             }
+
+            // if number on index is "1", this index is Loopback Interface.
+            if (atoi(temp) == 1) {
+                continue;
+            }
+
             // set index number
             MAC_index_list[MAC_index_num].index = atoi(temp);
 
@@ -207,36 +213,30 @@ int get_interface_info(struct MAC_index MAC_index_list[10]) {
             j = 0;
 
             // get MAC address
-            for (; i < strlen(command_result_row); i++)
-            {
-                if (isdigit(command_result_row[i]) == 0 && (command_result_row[i] < 'a' || 'f' < command_result_row[i]))
-                {
+            for (; i < strlen(command_result_row); i++) {
+                if (isdigit(command_result_row[i]) == 0 && (command_result_row[i] < 'a' || 'f' < command_result_row[i])) {
                     continue;
-                }
-                else if (command_result_row[i] >= 65 && command_result_row[i] <= 90)
-                {
+                } else if ('A' <= command_result_row[i] && command_result_row[i] <= 'F') {
                     temp[j] = command_result_row[i] + 32;
-                    temp[j + 1] = command_result_row[i + 1] + 32;
-                }
-                else
-                {
+                    //temp[j + 1] = command_result_row[i + 1] + 32;
+                } else {
                     temp[j] = command_result_row[i];
-                    temp[j + 1] = command_result_row[i + 1];
+                    //temp[j + 1] = command_result_row[i + 1];
                 }
-                if (j == 15)
-                {
+
+                j++;
+                if (j == 17) {
                     break;
+                } else if ((j + 1) % 3 == 0) {
+                    temp[j] = ':';
+                    j++;
                 }
-                temp[j + 2] = ':';
-                i++;
-                j += 3;
             }
             // set MAC address
             strcpy(MAC_index_list[MAC_index_num].CH_MAC_addr, temp);
 
             // Exclude unsuitable MAC address
-            if (j != 15)
-            {
+            if (j != 17) {
                 continue;
             }
 
