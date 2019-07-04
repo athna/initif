@@ -152,10 +152,8 @@ int main(void) {
                 // Assign some values to an interface
                 set_ipaddress(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
             } else {  //IPv6
-                puts("IPv6");
                 //// ip address
                 strcpy(set_ip_adder, conf_ip_adder);
-                printf("IP:%s", set_ip_adder);
                 // Assign some values to an interface
                 set_ipaddress(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
             }
@@ -470,5 +468,4 @@ void mac_to_ip_address(char MAC_adder[32], char set_ip_adder[16]) {
     sprintf(set_ip_adder, "%s.%ld", set_ip_adder, strtol(temp_ptr, NULL, 16));
     temp_ptr = strtok(NULL, ":");  // sixth octet
     sprintf(set_ip_adder, "%s.%ld", set_ip_adder, strtol(temp_ptr, NULL, 16));
-    printf("set_ip_adder:%s", set_ip_adder);
 }
