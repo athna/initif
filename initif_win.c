@@ -19,7 +19,8 @@ int get_interface_info(struct MAC_index MAC_index_list[10]);
 int compare_MAC_adder(struct MAC_index MAC_index_list[10], int MAX_MAC_index_num, char MAC_adder[32]);
 void calc_subnet_mask(int prefix, char set_subnet_mask[16]);
 void calc_default_gw(char ip_adder[16], int prefix, char set_default_gateway[16]);
-void setup_interface(int set_index_number, char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan);
+void set_ipaddress(int set_index_number, char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan);
+void set_route(int set_index_number, char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan);
 int binary_to_decimal(char binary_number[8]);
 void mac_to_ip_address(char MAC_adder[32], char set_ip_adder[16]);
 
@@ -33,7 +34,7 @@ int main(void) {
     struct MAC_index MAC_index_list[10];
     int MAX_MAC_index_num = 0;
     char conf_MAC_adder[32] = {'\0'};
-    char conf_ip_adder[16] = {'\0'};
+    char conf_ip_adder[40] = {'\0'};
     char temp_ip_adder[16] = {'\0'};
     int conf_prefix = 0;
     char conf_gw_ip_adder[16] = {'\0'};
@@ -132,7 +133,7 @@ int main(void) {
             calc_default_gw(temp_ip_adder, conf_prefix, set_default_gateway);
 
             // Assign some values to an interface
-            setup_interface(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
+            set_ipaddress(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
             break;
         }
 
@@ -149,8 +150,14 @@ int main(void) {
                 calc_default_gw(conf_ip_adder, conf_prefix, set_default_gateway);
 
                 // Assign some values to an interface
-                setup_interface(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
+                set_ipaddress(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
             } else {  //IPv6
+                puts("IPv6");
+                //// ip address
+                strcpy(set_ip_adder, conf_ip_adder);
+                printf("IP:%s", set_ip_adder);
+                // Assign some values to an interface
+                set_ipaddress(set_index_number, set_ip_adder, set_subnet_mask, set_default_gateway, set_vlan);
             }
         }
     }
@@ -340,7 +347,8 @@ void calc_default_gw(char ip_adder[16], int prefix, char set_default_gateway[16]
 }
 
 /**
- * @brief Assign some values to an interface
+ * TODO: Implement
+ * @brief Assign route to an interface
  *
  * @param set_index_number      Index value of interface to set
  * @param set_IP_addr           IP address to assign
@@ -353,7 +361,7 @@ void calc_default_gw(char ip_adder[16], int prefix, char set_default_gateway[16]
  * netsh interface ipv4 set address name=<index> source=static address=<IP address>
  * mask=<subnet mask> gateway=<default gateway> gwmetric=1
  */
-void setup_interface(int set_index_number, char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan) {
+void set_route(int set_index_number, char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan) {
     char cmd[256] = {'\0'};
     if (DEBUG) {
         printf("index:%d\n", set_index_number);
@@ -361,12 +369,67 @@ void setup_interface(int set_index_number, char set_IP_addr[16], char set_subnet
         printf("sub net:%s\n", set_subnet_mask);
         printf("default GW:%s\n", set_default_gateway);
     }
-    snprintf(
-        cmd, 256,
-        "netsh interface ipv4 set address name=%d source=static address=%s "
-        "mask=%s gateway=%s gwmetric=1",
-        set_index_number, set_IP_addr, set_subnet_mask, set_default_gateway);
-    // printf("%s", cmd);
+
+    if (strchr(set_IP_addr, (int)'.')) {  // IPv4
+        snprintf(
+            cmd, 256,
+            "netsh interface ipv4 set address name=%d source=static address=%s "
+            "mask=%s gateway=%s gwmetric=1",
+            set_index_number, set_IP_addr, set_subnet_mask, set_default_gateway);
+    } else {  // IPv6
+        snprintf(
+            cmd, 256,
+            "netsh interface ipv6 add route prefix=%s interface=%d publish=no",
+            set_default_gateway, set_index_number);
+        // default gateway?
+        // https://www.computernetworkingnotes.com/networking-tutorials/how-to-configure-ipv6-address-in-windows.html
+        // コマンドの結合は&っぽい
+    }
+    if (DEBUG) {
+        printf("%s", cmd);
+    }
+    system(cmd);
+}
+
+/**
+ * @brief Assign ip address to an interface
+ *
+ * @param set_index_number      Index value of interface to set
+ * @param set_IP_addr           IP address to assign
+ * @param set_subnet_mask       Subnet mask to assign
+ * @param set_default_gateway   default gateway to assign
+ * @param set_vlan              vlan to assign (Don't support now)
+ *
+ * @detail
+ * Used Windows command
+ * netsh interface ipv4 set address name=<index> source=static address=<IP address>
+ * mask=<subnet mask> gateway=<default gateway> gwmetric=1
+ */
+void set_ipaddress(int set_index_number, char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan) {
+    char cmd[256] = {'\0'};
+    if (DEBUG) {
+        printf("index:%d\n", set_index_number);
+        printf("ip addr:%s\n", set_IP_addr);
+        printf("sub net:%s\n", set_subnet_mask);
+        printf("default GW:%s\n", set_default_gateway);
+    }
+
+    if (strchr(set_IP_addr, (int)'.')) {  // IPv4
+        snprintf(
+            cmd, 256,
+            "netsh interface ipv4 set address name=%d source=static address=%s "
+            "mask=%s gateway=%s gwmetric=1",
+            set_index_number, set_IP_addr, set_subnet_mask, set_default_gateway);
+    } else {  // IPv6
+        snprintf(
+            cmd, 256,
+            "netsh interface ipv6 set address interface=%d address=%s "
+            "type=unicast validlifetime=infinite preferredlifetime=infinite store=active",
+            set_index_number, set_IP_addr);
+    }
+    if (DEBUG) {
+        printf("%s", cmd);
+    }
     system(cmd);
 }
 
