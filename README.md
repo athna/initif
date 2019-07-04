@@ -8,7 +8,7 @@ gcc -o initif .\initif_win.c
 ## Installation of the program
 Use "task scheduler" for installation of the program.
 1. Windows-R
-2. Enter "task scheduler"
+2. Enter "Taskschd.msc"
 3. Choice task scheduler library
 4. Click Create task
 5. Choice General tag
