@@ -35,6 +35,27 @@ class Interface():
                 return 1
         return 0
 
+    def get_netplan_dict(self):
+        '''
+        enp3s0:
+            addresses: [10.10.10.2/24, '2001:1::2/64']
+            gateway4: 10.10.10.1
+            nameservers:
+                search: [mydomain, example.jp]
+                addresses: [10.10.10.1, 1.1.1.1]
+        '''
+        if self.ipv4_addr == "" and self.ipv6_addr == "":
+            return - 1
+
+        temp_dict = {}
+        temp_dict["addresses"] = []
+        if self.ipv4_addr != "":
+            temp_dict["addresses"].append(self.ipv4_addr)
+        if self.ipv6_addr != "":
+            temp_dict["addresses"].append(self.ipv6_addr)
+
+        return temp_dict
+
     def Base_16_to_10(self, num_16: str) -> str:
         return str(int(num_16, 16))
 
@@ -100,10 +121,19 @@ for interface in interface_list:
     if result == 1:
         break
 
-
-
 # GET base file of netplan
 with open("50-cloud-init.yaml.base") as stream:
     yaml_data = yaml.safe_load(stream)
 
-print(yaml_data)
+# MAKE netplan file
+yaml_data["network"]["ethernets"] = {}
+for interface in interface_list:
+    temp_data = interface.get_netplan_dict()
+    if temp_data == -1:
+        continue
+    else:
+        yaml_data["network"]["ethernets"][interface.name] = temp_data
+
+
+with open("50-cloud-init.yaml", "w") as netplan_f:
+    netplan_f.write(yaml.dump(yaml_data, default_flow_style=False))
