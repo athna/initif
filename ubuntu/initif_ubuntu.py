@@ -5,10 +5,6 @@ import yaml
 import re
 import subprocess
 
-# YAML_PATH = "/etc/netplan/50-cloud-init.yaml"
-YAML_PATH = "50-cloud-init.yaml.org"
-interface_list = []
-
 
 class Interface():
     def __init__(self, int_number, int_name, mac_addr):
@@ -19,19 +15,7 @@ class Interface():
     def info(self):
         print("number:{}, name:{}, mac_addr:{}".format(self.number, self.name, self.mac_addr))
 
-
-## YAML
-'''
-with open(YAML_PATH) as stream:
-    data = yaml.safe_load(stream)
-    print(type(data))
-
-for key, value in data["network"]["ethernets"].items():
-    print(key)
-    print(value)
-'''
-
-## ip a command
+## get interface information
 cmd = ("ip a")
 ipa_data = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).stdout.readlines()
 
@@ -39,6 +23,7 @@ is_skip = False
 temp_number = ""
 temp_int_name = ""
 temp_mac_addr = ""
+interface_list = []
 
 for data in ipa_data:
     data = data.decode("utf-8")
@@ -74,3 +59,12 @@ for data in ipa_data:
 
 for interface in interface_list:
     interface.info()
+
+
+
+
+## GET base file of netplan
+with open("50-cloud-init.yaml.base") as stream:
+    yaml_data = yaml.safe_load(stream)
+
+print(yaml_data)

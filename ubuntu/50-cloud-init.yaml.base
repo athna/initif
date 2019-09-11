@@ -5,7 +5,4 @@
 # network: {config: disabled}
 network:
     ethernets:
-        enp0s3:
-            addresses: []
-            dhcp4: true
     version: 2
