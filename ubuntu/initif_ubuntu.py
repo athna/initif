@@ -11,11 +11,43 @@ class Interface():
         self.number = int_number
         self.name = int_name
         self.mac_addr = mac_addr
+        self.ipv4_addr = ""
+        self.ipv6_addr = ""
+        self.vlan = ""
+
+    def set_addr(self, initif_datas):
+        for initif_data in initif_datas:
+            if self.mac_addr == initif_data[2]:
+                if initif_data[1].find(".") != -1:
+                    # ipv4
+                    self.ipv4_addr = initif_data[1]
+                elif initif_data[1].find(":") != -1:
+                    # ipv6
+                    self.ipv6_addr = initif_data[1]
+                self.vlan = initif_data[3]
+            elif initif_data[1] == "999.999.999.999/24":
+                temp_mac_list = self.mac_addr.split(":")
+                self.ipv4_addr = "{0}.{1}.{2}.{3}/24".format(
+                    self.Base_16_to_10(temp_mac_list[2]),
+                    self.Base_16_to_10(temp_mac_list[3]),
+                    self.Base_16_to_10(temp_mac_list[4]),
+                    self.Base_16_to_10(temp_mac_list[5]))
+                return 1
+        return 0
+
+    def Base_16_to_10(self, num_16: str) -> str:
+        return str(int(num_16, 16))
 
     def info(self):
-        print("number:{}, name:{}, mac_addr:{}".format(self.number, self.name, self.mac_addr))
+        print("***{}***".format(self.name))
+        print("    - number:{}".format(self.number))
+        print("    - mac_addr:{}".format(self.mac_addr))
+        print("    - ipv4_addr:{}".format(self.ipv4_addr))
+        print("    - ipv6_addr:{}".format(self.ipv6_addr))
+        print("    - vlan:{}".format(self.vlan))
 
-## get interface information
+
+# get interface information
 cmd = ("ip a")
 ipa_data = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True).stdout.readlines()
 
@@ -57,13 +89,20 @@ for data in ipa_data:
         temp_int_name = ""
         temp_mac_addr = ""
 
+# GET initif file
+initif_datas = []
+with open("initif2.conf") as initif_f:
+    for data in initif_f.readlines():
+        initif_datas.append(data.replace("\n", "").split(" "))
+
 for interface in interface_list:
-    interface.info()
+    result = interface.set_addr(initif_datas)
+    if result == 1:
+        break
 
 
 
-
-## GET base file of netplan
+# GET base file of netplan
 with open("50-cloud-init.yaml.base") as stream:
     yaml_data = yaml.safe_load(stream)
 
