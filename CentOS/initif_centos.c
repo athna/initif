@@ -5,10 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG true
+#define DEBUG false
+#define CONFIG_FILE "/bin/cyberrange/initif/initif.conf"
+#define IP_ANA_AWK "/bin/cyberrange/initif/ip-ana.awk"
+
 
 // compile command
-// gcc -O3 -mtune=native -march=native  -o initif .\initif_win.c  -lm
+// gcc -O3 -mtune=native -march=native  -o initif ./initif_centos.c  -lm
 
 struct MAC_index {
     char CH_MAC_addr[32];
@@ -26,7 +29,6 @@ int binary_to_decimal(char binary_number[8]);
 void mac_to_ip_address(char MAC_adder[32], char set_ip_adder[16]);
 
 int main(void) {
-    char file_name[256] = "/media/sf_initif/initif.conf";
     FILE *fp;
     char *temp_ptr;
     char config_file_row[256] = {'\0'};
@@ -56,7 +58,7 @@ int main(void) {
     }
 
     /********Open initif.conf********/
-    if ((fp = fopen(file_name, "r")) == NULL) {
+    if ((fp = fopen(CONFIG_FILE, "r")) == NULL) {
         printf("file open error!!\n");
         exit(EXIT_FAILURE);
     }
@@ -461,7 +463,10 @@ void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_
             cmd, 256,
             "ip link add link %s name %s type vlan id %d",
             set_int_name, dev_name, set_vlan);
-        printf("%s\n", cmd);
+        if (DEBUG) {
+            printf("%s\n", cmd);
+        }
+        system(cmd);
     } else {
         snprintf(dev_name, 32, "%s", set_int_name);
     }
