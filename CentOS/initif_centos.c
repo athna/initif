@@ -5,10 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEBUG false
+#define DEBUG true
 #define CONFIG_FILE "/bin/cyberrange/initif/initif.conf"
 #define IP_ANA_AWK "/bin/cyberrange/initif/ip-ana.awk"
-
 
 // compile command
 // gcc -O3 -mtune=native -march=native  -o initif ./initif_centos.c  -lm
@@ -18,12 +17,14 @@ struct MAC_index {
     char int_name[32];
 };
 
+char flushed_MAC_addr[10][32] = {'\0'};
+
 int get_interface_info(struct MAC_index MAC_index_list[10]);
 int compare_MAC_adder(struct MAC_index MAC_index_list[10], int MAX_MAC_index_num, char MAC_adder[32], char set_int_name[32]);
 void calc_subnet_mask(int prefix, char set_subnet_mask[16]);
 void calc_default_gw(char ip_adder[16], int prefix, char set_default_gateway[16]);
 void calc_broadcast(char ip_adder[16], int prefix, char set_broadcast[16]);
-void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan);
+void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan, char conf_MAC_adder[16]);
 void set_route(char set_int_name[32], char set_IP_addr[16], char set_subnet_mask[16], char set_default_gateway[16], int set_vlan);
 int binary_to_decimal(char binary_number[8]);
 void mac_to_ip_address(char MAC_adder[32], char set_ip_adder[16]);
@@ -138,7 +139,7 @@ int main(void) {
             calc_broadcast(temp_ip_adder, conf_prefix, set_broadcast);
 
             // Assign some values to an interface
-            set_ipaddress(set_int_name, set_ip_adder, set_subnet_mask, set_broadcast, set_vlan);
+            set_ipaddress(set_int_name, set_ip_adder, set_subnet_mask, set_broadcast, set_vlan, conf_MAC_adder);
             break;
         }
 
@@ -157,7 +158,7 @@ int main(void) {
                 calc_broadcast(conf_ip_adder, conf_prefix, set_broadcast);
 
                 // Assign some values to an interface
-                set_ipaddress(set_int_name, set_ip_adder, set_subnet_mask, set_broadcast, set_vlan);
+                set_ipaddress(set_int_name, set_ip_adder, set_subnet_mask, set_broadcast, set_vlan, conf_MAC_adder);
             } else {  //IPv6
                 //// ip address
                 strcpy(set_ip_adder, conf_ip_adder);
@@ -165,7 +166,7 @@ int main(void) {
                 sprintf(set_prefix, "%d", conf_prefix);
 
                 // Assign some values to an interface
-                set_ipaddress(set_int_name, set_ip_adder, set_prefix, set_default_gateway, set_vlan);
+                set_ipaddress(set_int_name, set_ip_adder, set_prefix, set_default_gateway, set_vlan, conf_MAC_adder);
             }
         }
     }
@@ -185,12 +186,14 @@ int main(void) {
 int get_interface_info(struct MAC_index MAC_index_list[10]) {
     FILE *command_result;
     char command_result_row[2048];
+    char command[256] = {'\0'};
     char temp[32] = "";
     int i = 0, j = 0;
     int MAC_index_num = 0;
 
     /* execute command */
-    if ((command_result = popen("ip -d address |awk -f ./ip-ana.awk |sort ", "r")) == NULL) {
+    sprintf(command, "ip -d address |awk -f %s |sort ", IP_ANA_AWK);
+    if ((command_result = popen(command, "r")) == NULL) {
         printf("[error] couldn't get result for \"route print\" command\n");
         exit(-1);
     }
@@ -289,7 +292,7 @@ int compare_MAC_adder(struct MAC_index MAC_index_list[10], int MAX_MAC_index_num
     for (i = 0; i < MAX_MAC_index_num; i++) {
         if (strncmp(MAC_index_list[i].CH_MAC_addr, MAC_adder, 17) == 0) {
             strcpy(set_int_name, MAC_index_list[i].int_name);
-            return i;
+            return 0;
         }
     }
     return -1;
@@ -444,7 +447,7 @@ void set_route(char set_int_name[32], char set_IP_addr[16], char set_subnet_mask
  * netsh interface ipv4 set address name=<index> source=static address=<IP address>
  * mask=<subnet mask> gateway=<default gateway> gwmetric=1
  */
-void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_mask[16], char set_broadcast[16], int set_vlan) {
+void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_mask[16], char set_broadcast[16], int set_vlan, char conf_MAC_adder[16]) {
     char cmd[256] = {'\0'};
     char dev_name[32] = {'\0'};
     if (DEBUG) {
@@ -472,17 +475,32 @@ void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_
     }
 
     /****** IP address ******/
+    // check is flush
+    int i = 0;
+    bool is_flush = false;
+    for (i = 0; i < 10; i++) {
+        if (strcmp(flushed_MAC_addr[i], conf_MAC_adder) == 0) {
+            is_flush = true;
+        }
+    }
+    if (is_flush == false) {
+        snprintf(cmd, 256, "ip addr flush dev %s;", dev_name);
+        if (DEBUG) {
+            printf("%s\n\n", cmd);
+        }
+        system(cmd);
+    }
+
     //#ip address add 10.0.100.2 broadcast 10.0.100.255 dev enp0s3.100
     if (strchr(set_IP_addr, (int)'.')) {  // IPv4
-        snprintf(
-            cmd, 256,
-            "ip address add %s/%s broadcast %s dev %s",
-            set_IP_addr, set_subnet_mask, set_broadcast, dev_name);
+        snprintf(cmd, 256, "ip address add %s/%s broadcast %s dev %s", set_IP_addr, set_subnet_mask, set_broadcast, dev_name);
     } else {  // IPv6
-        snprintf(
-            cmd, 256,
-            "ip -6 address add %s/%s dev %s",
-            set_IP_addr, set_subnet_mask, dev_name);
+        snprintf(cmd, 256, "ip -6 address add %s/%s dev %s", set_IP_addr, set_subnet_mask, dev_name);
+    }
+    for (i = 0; i < 10; i++) {
+        if (strcmp(flushed_MAC_addr[i], "") == 0) {
+            strcpy(flushed_MAC_addr[i], conf_MAC_adder);
+        }
     }
     if (DEBUG) {
         printf("%s\n\n", cmd);
