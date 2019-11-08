@@ -17,7 +17,7 @@ struct MAC_index {
     char int_name[32];
 };
 
-char flushed_MAC_addr[10][32] = {'\0'};
+char flushed_MAC_addr[20][32] = {"\0"};
 
 int get_interface_info(struct MAC_index MAC_index_list[10]);
 int compare_MAC_adder(struct MAC_index MAC_index_list[10], int MAX_MAC_index_num, char MAC_adder[32], char set_int_name[32]);
@@ -50,6 +50,10 @@ int main(void) {
     char set_default_gateway[16] = {'\0'};
     char set_broadcast[16] = {'\0'};
     int set_vlan = 0;
+
+    for (i = 0; i < 20; i++) {
+        memset(flushed_MAC_addr[i], '\0', strlen(flushed_MAC_addr[i]));
+    }
 
     /********Get MAC address, index list********/
     MAX_MAC_index_num = get_interface_info(MAC_index_list);
@@ -478,8 +482,10 @@ void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_
     // check is flush
     int i = 0;
     bool is_flush = false;
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 20; i++) {
+        printf("flushed_MAC_addr[%d]: %s, conf_MAC_adder:%s\n", i, flushed_MAC_addr[i], conf_MAC_adder);
         if (strcmp(flushed_MAC_addr[i], conf_MAC_adder) == 0) {
+            printf("OKKKKK - flushed_MAC_addr[%d]: %s, conf_MAC_adder:%s\n", i, flushed_MAC_addr[i], conf_MAC_adder);
             is_flush = true;
         }
     }
@@ -491,20 +497,27 @@ void set_ipaddress(char set_int_name[32], char set_IP_addr[16], char set_subnet_
         system(cmd);
     }
 
+    system("service NetworkManager stop");
+    system("chkconfig NetworkManager off");
+
     //#ip address add 10.0.100.2 broadcast 10.0.100.255 dev enp0s3.100
     if (strchr(set_IP_addr, (int)'.')) {  // IPv4
         snprintf(cmd, 256, "ip address add %s/%s broadcast %s dev %s", set_IP_addr, set_subnet_mask, set_broadcast, dev_name);
     } else {  // IPv6
         snprintf(cmd, 256, "ip -6 address add %s/%s dev %s", set_IP_addr, set_subnet_mask, dev_name);
     }
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 20; i++) {
         if (strcmp(flushed_MAC_addr[i], "") == 0) {
             strcpy(flushed_MAC_addr[i], conf_MAC_adder);
+            break;
         }
     }
     if (DEBUG) {
-        printf("%s\n\n", cmd);
+        printf("exec cmd: %s\n\n", cmd);
     }
+    system(cmd);
+
+    snprintf(cmd, 256, "ip link set up  dev %s", dev_name);
     system(cmd);
 }
 
